@@ -1,3 +1,4 @@
+import assert from "assert";
 // Роботизированное агентство «Двое из ларца» занимается выполнением задач любой сложности за деньги клиентов.
 // Работает агентство по принципу «одного окна». С     начала заказчик приносит список работ, которые нужно выполнить, с указанием приоритета каждой из них.
 // Затем робот-менеджер вывешивает табличку «Ушёл на базу», уходит контролировать работу роботов-исполнителей, а когда те всё выполнят — возвращается
@@ -26,29 +27,26 @@
 class TaskManager {
     tasks = [];
     robots = [];
-    freeRobots;
+    reportsByRobot = {};
 
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
     ) {
-        this.robots = new Array(N).fill().map((report, idx) => {
-            return {
-                id: idx,
-                idle: true,
-                report: {
-                    // число — общее количество выполненных успешно задач
-                    successCount: 0,
-                    // число — общее количество невыполненных задач
-                    failedCount: 0,
-                    // массив строк — идентификаторы взятых задач по очереди
-                    tasks: [],
-                    // число — количество проведённых в работе миллисекунд
-                    timeSpent: 0,
-                },
-            };
-        });
+        this.robots = new Array(N).fill().map((report, idx) => ({ id: idx, idle: true }));
 
-        this.freeRobots = new Set(this.robots.map(r => r.idx));
+        this.reportsByRobot = this.robots.reduce((acc, current) => {
+            acc[current.id] = {
+                // число — общее количество выполненных успешно задач
+                successCount: 0,
+                // число — общее количество невыполненных задач
+                failedCount: 0,
+                // массив строк — идентификаторы взятых задач по очереди
+                tasks: [],
+                // число — количество проведённых в работе миллисекунд
+                timeSpent: 0,
+            };
+            return acc;
+        }, {});
     }
 
     // Добавление задачи в очередь
@@ -61,89 +59,120 @@ class TaskManager {
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
     run = () => {
         const sortedTasks = this.tasks.sort((a, b) => a.priority - b.priority);
-        // const idleRobots = this.robots.filter(r => r.idle);
 
-        // const iter = () => {};
+        const runner = robots =>
+            Promise.all(
+                robots.map(r => {
+                    if (sortedTasks.length) {
+                        const currentTask = sortedTasks.pop();
+                        const report = this.reportsByRobot[r.id];
+                        const start = Date.now();
 
-        return Promise.all(
-            this.robots.map(r => {
-                if (sortedTasks.length) {
-                    const currentTask = sortedTasks.pop();
+                        return currentTask
+                            .job()
+                            .then(
+                                () => {
+                                    report.successCount += 1;
+                                },
+                                () => {
+                                    report.failedCount += 1;
+                                }
+                            )
+                            .finally(() => {
+                                report.tasks.push(currentTask.id);
+                                report.timeSpent += Date.now() - start;
+                            })
+                            .then(() => runner([r]))
+                            .then(() => report);
+                    }
 
-                    return currentTask
-                        .job()
-                        .then(
-                            () => {
-                                r.report.successCount += 1;
-                            },
-                            () => {
-                                r.report.failedCount += 1;
-                            }
-                        )
-                        .finally(() => {
-                            r.report.tasks.push(currentTask.id);
-                        })
-                        .then(async () => {
-                            await this.run();
-                            return r.report;
-                        });
-                    // r.idle = false;
-                    // try {
-                    //     await currentTask.job();
-                    // } catch (error) {
-                    //     r.report.failedCount += 1;
-                    // } finally {
-                    //     // r.idle = true;
-                    //     r.report.tasks.push(currentTask.id);
-                    // }
-                    // await this.run();
-                }
+                    return this.reportsByRobot[r.id];
+                })
+            );
 
-                console.log("-----", "r", r);
-
-                return r.report;
-            })
-        );
+        return runner(this.robots);
     };
 }
 
 (async () => {
+    // let i = true;
     const generateJob = id =>
         function () {
+            // const timeout = i ? 500 : 1000;
+            // i = !i;
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    resolve();
-                    // Math.random() > 0.8 ? resolve() : reject();
-                }, 1000);
-                // }, Math.random() * 2000);
+                    // resolve();
+                    Math.random() > 0.8 ? resolve() : reject();
+                    // }, timeout);
+                }, Math.random() * 2000);
             });
         };
 
     const tm = new TaskManager(3);
+    // n1 - id2 + id4 (500 + 1000)
+    // n2 - id0 + id1 (1000 + 1000)
+    // n3 - id3 + id5  (500 + 500)
 
+    // 1000 - n2
     tm.addToQueue({
         id: "id0",
-        priority: 10,
+        priority: 9,
         job: generateJob("id0"),
     });
+    // 1000 - n3
     tm.addToQueue({
         id: "id1",
         priority: 1,
         job: generateJob("id1"),
     });
+    // 500 - n1
     tm.addToQueue({
         id: "id2",
         priority: 10,
         job: generateJob("id2"),
     });
+    // 500 - n3
     tm.addToQueue({
         id: "id3",
-        priority: 5,
+        priority: 4,
         job: generateJob("id3"),
+    });
+    // 1000 - n1
+    tm.addToQueue({
+        id: "id4",
+        priority: 3,
+        job: generateJob("id4"),
+    });
+    // 500 - n2
+    tm.addToQueue({
+        id: "id5",
+        priority: 2,
+        job: generateJob("id5"),
     });
 
     const report = await tm.run();
-    // console.log(`-----report = `, JSON.stringify(report, null, 4));
+
+    // assert.deepEqual(
+    //     report.map(({ timeSpent, ...r }) => r),
+    //     [
+    //         {
+    //             failedCount: 0,
+    //             successCount: 2,
+    //             tasks: ["id2", "id4"],
+    //         },
+    //         {
+    //             failedCount: 0,
+    //             successCount: 2,
+    //             tasks: ["id0", "id1"],
+    //         },
+    //         {
+    //             failedCount: 0,
+    //             successCount: 2,
+    //             tasks: ["id3", "id5"],
+    //         },
+    //     ]
+    // );
     console.log(report);
 })();
 
