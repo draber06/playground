@@ -138,7 +138,7 @@ class TaskManager {
         priority: 4,
         job: generateJob("id3"),
     });
-    1000 - n1;
+    // 1000 - n1;
     tm.addToQueue({
         id: "id4",
         priority: 3,
