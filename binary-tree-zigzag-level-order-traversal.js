@@ -19,7 +19,7 @@ class TreeNode {
  * @param {TreeNode} root
  * @return {number[][]}
  */
-const zigzagLevelOrder = (root) => {
+const zigzagLevelOrder = root => {
     if (!root) return [];
 
     let queue = [root];
@@ -47,17 +47,9 @@ const zigzagLevelOrder = (root) => {
     return res;
 };
 
-const tree = new TreeNode(
-    1,
-    new TreeNode(2, new TreeNode(4)),
-    new TreeNode(3, null, new TreeNode(5))
-);
+const tree = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(5)));
 
-const tree2 = new TreeNode(
-    3,
-    new TreeNode(9),
-    new TreeNode(20, new TreeNode(15), new TreeNode(7))
-);
+const tree2 = new TreeNode(3, new TreeNode(9), new TreeNode(20, new TreeNode(15), new TreeNode(7)));
 
 // assert.deepEqual(zigzagLevelOrder(tree), [[1], [3, 2], [4, 5]]);
 assert.deepEqual(zigzagLevelOrder(tree2), [[3], [20, 9], [15, 7]]);

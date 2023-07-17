@@ -7,10 +7,11 @@ import assert from "assert";
  * @return {void} Do not return anything, modify nums1 in-place instead.
  */
 const merge = function (nums1, m, nums2, n) {
-  if (!nums1.length) return nums1;
-  if (!nums2.length) return nums2;
-  nums1.splice(m, n, ...nums2);
-  return nums1.sort();
+    if (!nums1.length) return nums1;
+    if (!nums2.length) return nums2;
+    nums1.splice(m, n, ...nums2);
+
+    nums1.sort();
 };
 
 const nums1 = [1, 2, 3, 0, 0, 0];
