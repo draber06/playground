@@ -16,13 +16,16 @@ function ListNode(val) {
  * @param {ListNode} head
  * @return {boolean}
  */
-const hasCycle = (head) => {
-    let fast = head;
+const hasCycle = head => {
+    let current = head;
+    let fast = current;
+
     while (fast && fast.next) {
-        head = head.next;
+        current = current.next;
         fast = fast.next.next;
-        if (fast === head) return true;
+        if (fast === current) return true;
     }
+
     return false;
 };
 
