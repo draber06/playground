@@ -19,3 +19,4 @@ rules:
   lines-between-class-members: 0
   import/prefer-default-export: 0
   prefer-destructuring: 0
+  vars-on-top: 0
