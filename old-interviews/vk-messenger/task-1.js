@@ -18,6 +18,31 @@ function compareVersions(v1, v2) {
     return 0;
 }
 
+// How I solved it during the interview
+function compareVersions2(v1, v2) {
+    if (v1 === v2) {
+        return 0;
+    }
+
+    const s1 = v1.split(".");
+    const s2 = v2.split(".");
+
+    while (s1.length || s2.length) {
+        const e1 = s1.shift() || 0;
+        const e2 = s2.shift() || 0;
+
+        if (Number(e1) > Number(e2)) {
+            return 1;
+        }
+
+        if (Number(e1) < Number(e2)) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 assert.equal(compareVersions("2.0", "1.0"), 1);
 assert.equal(compareVersions("1.0", "2.0"), -1);
 assert.equal(compareVersions("1.0", "1.0"), 0);
