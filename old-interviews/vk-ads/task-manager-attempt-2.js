@@ -1,3 +1,4 @@
+import assert from "assert";
 // Роботизированное агентство «Двое из ларца» занимается выполнением задач любой сложности за деньги клиентов.
 // Работает агентство по принципу «одного окна». С     начала заказчик приносит список работ, которые нужно выполнить, с указанием приоритета каждой из них.
 // Затем робот-менеджер вывешивает табличку «Ушёл на базу», уходит контролировать работу роботов-исполнителей, а когда те всё выполнят — возвращается
@@ -24,52 +25,127 @@
 // Приоритет задачи — целое число. Чем больше число, тем больший приоритет у задачи.
 // Вам нужно реализовать класс TaskManager со следующими методами:
 class TaskManager {
+    tasks = [];
+
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
-    ) {}
+    ) {
+        this.robots = Array.from(Array(N).keys());
+        this.reportsByRobot = this.robots.reduce((acc, current) => {
+            acc[current] = {
+                // число — общее количество выполненных успешно задач
+                successCount: 0,
+                // число — общее количество невыполненных задач
+                failedCount: 0,
+                // массив строк — идентификаторы взятых задач по очереди
+                tasks: [],
+                // число — количество проведённых в работе миллисекунд
+                timeSpent: 0,
+            };
+            return acc;
+        }, {});
+    }
 
     // Добавление задачи в очередь
     addToQueue(
         task // задача для исполнения, см. формат выше
-    ) {}
+    ) {
+        this.tasks.push(task);
+    }
 
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
-    run = () => {};
+    run() {
+        const sortedTasks = this.tasks.sort((a, b) => {
+            if (a.priority > b.priority) {
+                return 1;
+            }
+            return -1;
+        });
+        const reports = this.reportsByRobot;
+
+        function runner(robots) {
+            return Promise.all(
+                robots.map(robot => {
+                    const currentTask = sortedTasks.pop();
+                    const report = reports[robot];
+                    const start = Date.now();
+
+                    return currentTask
+                        ?.job()
+                        .then(
+                            () => {
+                                report.successCount++;
+                            },
+                            () => {
+                                report.failedCount++;
+                            }
+                        )
+                        .finally(() => {
+                            report.tasks.push(currentTask.id);
+                            report.timeSpent += Date.now() - start;
+                        })
+                        .then(() => runner([robot]))
+                        .then(() => report);
+                })
+            );
+        }
+
+        return runner(this.robots);
+    }
 }
 
 (async () => {
     const generateJob = id =>
         function () {
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // resolve();
-                    Math.random() > 0.8 ? resolve() : reject();
-                    // }, timeout);
-                }, Math.random() * 2000);
+                switch (id) {
+                    case "id0":
+                        setTimeout(() => {
+                            resolve();
+                        }, 1000);
+                        break;
+                    case "id1":
+                        setTimeout(() => {
+                            resolve();
+                        }, 2000);
+                        break;
+                    case "id2":
+                        setTimeout(() => {
+                            resolve();
+                        }, 3000);
+                        break;
+                    case "id3":
+                        setTimeout(() => {
+                            resolve();
+                        }, 1000);
+                        break;
+                    default:
+                        setTimeout(() => {
+                            // resolve();
+                            Math.random() > 0.8 ? resolve() : reject();
+                            // }, timeout);
+                        }, Math.random() * 2000);
+                }
             });
         };
 
     const tm = new TaskManager(3);
 
-    // 1000 - n2
     tm.addToQueue({
         id: "id0",
         priority: 10,
         job: generateJob("id0"),
     });
-    // 1000 - n3
     tm.addToQueue({
         id: "id1",
         priority: 1,
         job: generateJob("id1"),
     });
-    // 500 - n1
     tm.addToQueue({
         id: "id2",
         priority: 10,
         job: generateJob("id2"),
     });
-    // 500 - n3
     tm.addToQueue({
         id: "id3",
         priority: 4,
@@ -78,7 +154,28 @@ class TaskManager {
 
     const report = await tm.run();
 
-    console.log(report);
+    assert.deepEqual(report, [
+        {
+            successCount: 2,
+            failedCount: 0,
+            tasks: ["id0", "id1"],
+            timeSpent: 0,
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id2"],
+            timeSpent: 0,
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id3"],
+            timeSpent: 0,
+        },
+    ]);
+
+    console.log("-----", "report", report);
 })();
 
 // module.exports = { TaskManager };
