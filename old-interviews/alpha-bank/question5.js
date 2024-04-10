@@ -1,18 +1,18 @@
 import assert from "assert";
 
-function getMoney(amount) {
-    const nominals = [5000, 1000, 500, 100, 50];
-    const change = nominals.reduce((acc, currentNominal) => {
-        acc[currentNominal] = 0;
-        return acc;
-    }, {});
+function getMoney(amount, cashbox) {
+    const nominals = Object.keys(cashbox).sort((a, b) => b - a);
+    const change = {};
 
     let currentAmount = amount;
     let currentNominalIdx = 0;
 
     while (currentAmount && currentNominalIdx < nominals.length) {
         const currentNominal = nominals[currentNominalIdx];
-        const numberOfBanknotes = Math.floor(currentAmount / currentNominal);
+        const numberOfBanknotes = Math.min(
+            Math.floor(currentAmount / currentNominal),
+            cashbox[currentNominal]
+        );
         change[currentNominal] = numberOfBanknotes;
 
         currentNominalIdx++;
@@ -26,5 +26,15 @@ function getMoney(amount) {
     return change;
 }
 
-assert.deepEqual(getMoney(6200), { 5000: 1, 1000: 1, 500: 0, 100: 2, 50: 0 });
+assert.deepEqual(getMoney(6200, { 5000: 0, 1000: 7, 100: 5 }), {
+    5000: 0,
+    1000: 6,
+    100: 2,
+});
+
+assert.deepEqual(getMoney(6200, { 5000: 0, 1000: 4, 100: 5 }), {
+    5000: 0,
+    1000: 6,
+    100: 2,
+});
 // assert.deepEqual(getMoney(6201), error);
