@@ -1,47 +1,6 @@
 import assert from "assert";
 
-function compareVersions(v1, v2) {
-    const version1 = v1.split(".");
-    const version2 = v2.split(".");
-
-    for (let i = 0; i < version1.length; i++) {
-        const diff = Number(version1[i]) - Number(version2[i]);
-        if (diff > 0) {
-            return 1;
-        }
-
-        if (diff < 0) {
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-// How I solved it during the interview
-function compareVersions2(v1, v2) {
-    if (v1 === v2) {
-        return 0;
-    }
-
-    const s1 = v1.split(".");
-    const s2 = v2.split(".");
-
-    while (s1.length || s2.length) {
-        const e1 = s1.shift() || 0;
-        const e2 = s2.shift() || 0;
-
-        if (Number(e1) > Number(e2)) {
-            return 1;
-        }
-
-        if (Number(e1) < Number(e2)) {
-            return -1;
-        }
-    }
-
-    return 0;
-}
+function compareVersions(v1, v2) {}
 
 assert.equal(compareVersions("2.0", "1.0"), 1);
 assert.equal(compareVersions("1.0", "2.0"), -1);

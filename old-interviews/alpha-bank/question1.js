@@ -1,3 +1,5 @@
+//  Что увидим в консоли?
+
 // eslint-disable-next-line no-var
 var value = 2;
 function showValue() {

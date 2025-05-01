@@ -1,10 +1,11 @@
 import assert from "assert";
 
+// Реализовать
 function add(a) {
+    if (!a) return 0;
+
     return b => {
-        if (!b) {
-            return a;
-        }
+        if (!b) return a;
 
         return add(a + b);
     };

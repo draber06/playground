@@ -46,40 +46,7 @@ const greenCar = {
     ],
 }; // true
 
-// 1. если количество ключей не равно то объекты не равны
-// 2. если примитив сравниваем строго по значению ===
-// 3. если массив то, длинна должны быть равна,  если примитив сравниваем строго по значению ===,
-
-function isEqual(obj1, obj2) {
-    for (const key in obj1) {
-        if (!Object.hasOwn(obj2, key)) {
-            return false;
-        }
-
-        const v1 = obj1[key];
-        const v2 = obj2[key];
-        if (Array.isArray(v1) && Array.isArray(v2)) {
-            if (v1.length !== v2.length) {
-                return false;
-            }
-
-            return isEqual(v1, v2);
-        }
-
-        if (
-            typeof obj1[key] === "object" &&
-            obj1[key] !== null &&
-            typeof obj2[key] === "object" &&
-            obj2[key] !== null
-        ) {
-            return isEqual(v1, v2);
-        }
-
-        if (v1 !== v2) return false;
-    }
-
-    return true;
-}
+function isEqual(obj1, obj2) {}
 
 assert.equal(isEqual(redCar, greenCar), true);
 assert.equal(isEqual(redCar, yellowCar), false);

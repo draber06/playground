@@ -15,14 +15,6 @@ const list = [
         }),
 ];
 
-async function doStorageUpdate(storage, data) {
-    let task = Promise.resolve();
-
-    for (const operation of list) {
-        task = task
-            .then(() => operation(storage, data))
-            .then(res => console.log(`Logging results of operation: ${res}`));
-    }
-}
+function doStorageUpdate(storage, data) {}
 
 doStorageUpdate({}, {});
