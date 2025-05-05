@@ -6,18 +6,15 @@ import assert from "node:assert/strict";
 // 2. На входе добавляется объект с текущим количеством купюр в банкомате
 
 function getMoney(amount, limits = {}) {
-    const nominals = [5000, 1000, 500, 100, 50];
-    const change = nominals.reduce((acc, nominal) => ({ ...acc, [nominal]: 0 }), {});
-    let currentNominalPos = 0;
+    const denominations = [5000, 1000, 500, 100, 50];
+    const change = {};
     let currentAmount = amount;
 
-    while (currentAmount > 0 && currentNominalPos < nominals.length) {
-        const nominal = nominals[currentNominalPos];
-        const banknoteCount = Math.floor(currentAmount / nominal);
-        change[nominal] = banknoteCount;
-
-        currentAmount -= banknoteCount * nominal;
-        currentNominalPos++;
+    for (const denom of denominations) {
+        const available = Object.hasOwn(limits, denom) ? limits[denom] : Infinity;
+        const count = Math.min(Math.floor(currentAmount / denom), available);
+        change[denom] = count;
+        currentAmount -= count * denom;
     }
 
     if (currentAmount) {
