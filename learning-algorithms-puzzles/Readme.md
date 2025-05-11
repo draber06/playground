@@ -1,0 +1,2 @@
+Book - LEARNING ALGORITHMS THROUGH PROGRAMMING AND PUZZLE SOLVING 
+Authors - Alexander Kulikov and Pavel Pevzner
