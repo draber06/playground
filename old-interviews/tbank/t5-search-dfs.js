@@ -61,6 +61,31 @@ function search(path, object) {
     return current;
 }
 
+function alternativeSearch(path, object) {
+    const parts = path.split(".");
+
+    function resolvePath(paths, current) {
+        if (parts.length === 0) return current;
+
+        const [part, ...rest] = parts;
+
+        if (part === "*") {
+            if (Array.isArray(current)) {
+                return current.flatMap(item => resolvePath(rest, item));
+            } else if (typeof current === "object" || current !== null) {
+                return Object.values(current).flatMap(item => resolvePath(rest, item));
+            }
+            return [];
+        }
+
+        if (current == null || !Object.hasOwn(current, part)) return undefined;
+
+        return resolvePath(rest, current[part]);
+    }
+
+    return resolvePath(parts, object);
+}
+
 assert.deepEqual(search("albums.0.name", data), "AM");
 assert.deepEqual(search("artists.3.name", data), "Radiohead");
 assert.deepEqual(search("albums.*.name", data), [
