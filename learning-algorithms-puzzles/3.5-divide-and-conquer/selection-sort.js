@@ -1,4 +1,5 @@
-const readline = require("readline");
+import assert from "assert";
+import readline from "readline";
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -16,10 +17,12 @@ rl.on("line", line => {
 });
 
 rl.on("close", () => {
-    const n = parseInt(inputLines[0], 10);
-    const array = inputLines[1].split(" ").map(Number);
+    if (inputLines.length) {
+        const n = parseInt(inputLines[0], 10);
+        const array = inputLines[1].split(" ").map(Number);
 
-    selectionSort(n, array);
+        selectionSort(n, array);
+    }
 });
 
 function selectionSort(n, array) {
@@ -37,5 +40,10 @@ function selectionSort(n, array) {
         [arrayCopy[i], arrayCopy[minIndex]] = [arrayCopy[minIndex], arrayCopy[i]];
     }
 
-    return arrayCopy.join(" ");
+    return arrayCopy;
 }
+
+assert.deepEqual(
+    selectionSort(7, [13, 17, 37, 73, 31, 19, 12]),
+    [13, 17, 37, 73, 31, 19, 12].toSorted()
+);
