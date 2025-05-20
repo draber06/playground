@@ -15,30 +15,30 @@ process.stdin.on("end", () => {
     console.log(...quickSort(seq));
 });
 
-function partition(array, start, stop) {
-    const randomPivot = Math.floor(Math.random() * (stop - start + 1)) + start;
+function partition(array, left, right) {
+    const randomPivot = Math.floor(Math.random() * (right - left + 1)) + left;
 
-    [array[start], array[randomPivot]] = [array[randomPivot], array[start]];
+    [array[left], array[randomPivot]] = [array[randomPivot], array[left]];
 
-    const pivot = start;
-    let smallEnd = start + 1;
+    const pivot = array[left];
+    let smallEnd = left;
 
-    for (let i = start + 1; i <= stop; i++) {
-        if (array[i] <= array[pivot]) {
-            [array[smallEnd], array[i]] = [array[i], array[smallEnd]];
+    for (let i = left + 1; i <= right; i++) {
+        if (array[i] < pivot) {
             smallEnd++;
+            [array[smallEnd], array[i]] = [array[i], array[smallEnd]];
         }
     }
 
-    [array[pivot], array[smallEnd - 1]] = [array[smallEnd - 1], array[pivot]];
-    return smallEnd - 1;
+    [array[left], array[smallEnd]] = [array[smallEnd], array[left]];
+    return smallEnd;
 }
 
-function quickSort(array, start = 0, stop = array.length - 1) {
-    if (start < stop) {
-        let pivotIndex = partition(array, start, stop);
-        quickSort(array, start, pivotIndex - 1);
-        quickSort(array, pivotIndex + 1, stop);
+function quickSort(array, left = 0, right = array.length - 1) {
+    if (left < right) {
+        let pivotIndex = partition(array, left, right);
+        quickSort(array, left, pivotIndex - 1);
+        quickSort(array, pivotIndex + 1, right);
     }
 
     return array;
