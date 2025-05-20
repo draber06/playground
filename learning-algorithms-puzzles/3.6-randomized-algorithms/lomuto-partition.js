@@ -20,17 +20,13 @@ function lomutoPartition(array) {
     let smallEnd = 0;
 
     for (let i = 1; i < array.length; i++) {
-        const current = array[i];
-        if (current >= pivot) continue;
-        smallEnd++;
-        for (let j = i; j > smallEnd; j--) {
-            array[j] = array[j - 1];
+        if (array[i] < pivot) {
+            smallEnd++;
+            [array[smallEnd], array[i]] = [array[i], array[smallEnd]];
         }
-        array[smallEnd] = current;
     }
 
-    array[0] = array[smallEnd];
-    array[smallEnd] = pivot;
+    [array[0], array[smallEnd]] = [array[smallEnd], array[0]];
 
     return array;
 }
