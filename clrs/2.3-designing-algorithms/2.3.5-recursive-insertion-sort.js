@@ -17,16 +17,16 @@ process.stdin.on("end", () => {
     console.log(...nums);
 });
 
-function recursiveInsertionSort(arr, i = 2) {
+function recursiveInsertionSort(arr, i = 1) {
     if (i >= arr.length) return;
 
     const x = arr[i];
     let j = i - 1;
-    while (j > 0 && x < arr[j]) {
+    while (j >= 0 && x < arr[j]) {
         arr[j + 1] = arr[j];
         j--;
     }
     arr[j + 1] = x;
 
-    return recursiveInsertionSort(i + 1);
+    return recursiveInsertionSort(arr, i + 1);
 }
