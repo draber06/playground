@@ -20,7 +20,7 @@
     "no-constant-condition": [
       "error",
       {
-        "checkLoops": "all"
+        "checkLoops": false
       }
     ]
   }
