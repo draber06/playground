@@ -19,6 +19,15 @@ rl.on("close", () => {
     console.log(...nums);
 });
 
+/*
+    Inversions
+
+    d) Give an algorithm that determines the number of inversions in any permutation
+    on n elements in n lg n worst-case time. (Hint: Modify merge sort.)
+    Inversion pair
+    If i < j and A[i] > A[j]
+*/
+
 function merge(arr, p, q, r) {
     const left = arr.slice(p, q + 1);
     const right = arr.slice(q + 1, r + 1);
@@ -26,12 +35,14 @@ function merge(arr, p, q, r) {
     let i = 0;
     let j = 0;
     let k = p;
+    let inversion_count = 0;
 
     while (i < left.length && j < right.length) {
         if (left[i] <= right[j]) {
             arr[k] = left[i];
             i++;
         } else {
+            inversion_count += left.length - i;
             arr[k] = right[j];
             j++;
         }
@@ -48,19 +59,8 @@ function merge(arr, p, q, r) {
         j++;
         k++;
     }
-}
 
-// O(n^2)
-function insertionSort(arr, l, r) {
-    for (let i = l + 1; i <= r; i++) {
-        const key = arr[i];
-        let j = i - 1;
-        while (j >= l && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
+    return inversion_count;
 }
 
 function mergeSort(arr, p, r, k = Math.log2(arr.length)) {
@@ -68,12 +68,8 @@ function mergeSort(arr, p, r, k = Math.log2(arr.length)) {
         return;
     }
 
-    if (r - p + 1 < k) {
-        insertionSort(arr, p, r);
-    } else {
-        const q = Math.floor((p + r) / 2);
-        mergeSort(arr, p, q, k);
-        mergeSort(arr, q + 1, r, k);
-        merge(arr, p, q, r);
-    }
+    const q = Math.floor((p + r) / 2);
+    mergeSort(arr, p, q, k);
+    mergeSort(arr, q + 1, r, k);
+    merge(arr, p, q, r);
 }
