@@ -159,37 +159,61 @@
     }
 
 
+    const X_TAG_ID = 'application/x-tag-id'
+    const X_LETTER_ID = 'application/x-letter-id'
+
+
+
+
     document.addEventListener('DOMContentLoaded', () => {
-        const tagsDropzone = document.querySelector('.Tags')
-        const tagElements = document.getElementsByClassName('Tag')
-        const lettersDropzone = document.querySelector('.Letters')
-        const letterElements = document.getElementsByClassName('Letter')
+        const tagsDropzone = document.querySelector('.Tags');
+        const lettersDropzone = document.querySelector('.Letters');
 
-        let currentDraggableId = null
-
-        Array.from(tagElements).forEach(tag => {
-            tag.addEventListener('dragstart', handleTagDragStart)
-            tag.addEventListener('dragend', handleLetterDragEnd)
+        [tagsDropzone, lettersDropzone].forEach(dropzone => {
+            dropzone.addEventListener('dragstart', (event) => {
+                if (event.target.matches('.Tag')) {
+                    handleTagDragStart(event)
+                }
+            })
+            dropzone.addEventListener('dragend', (event) => {
+                if (event.target.matches('.Tag')) {
+                    handleTagDragend(event)
+                }
+            })
         })
 
-        tagsDropzone.addEventListener('dragenter', handleTagsDropzoneDragenter)
+        tagsDropzone.addEventListener('dragenter', handleTagsDropzoneDragEnter)
         tagsDropzone.addEventListener('dragover', handleTagsDropzoneDragOver)
         tagsDropzone.addEventListener('dragleave', handleTagsDropzoneDragLeave)
         tagsDropzone.addEventListener('drop', handleTagsDropzoneDrop)
 
-        Array.from(letterElements).forEach(letter => {
-            letter.addEventListener('dragenter', handleLetterDragEnter)
-            letter.addEventListener('dragover', handleLetterDragOver)
-            letter.addEventListener('dragleave', handleLetterDragLeave)
-            letter.addEventListener('drop', handleTagDrop)
+        lettersDropzone.addEventListener('dragenter', event => {
+            if(event.target.matches('.Letter')) {
+                handleLetterDragEnter(event)
+            }
+        })
+        lettersDropzone.addEventListener('dragover', event => {
+            if(event.target.matches('.Letter')) {
+                handleLetterDragOver(event)
+            }
+        })
+        lettersDropzone.addEventListener('dragleave', event => {
+            if(event.target.matches('.Letter')) {
+                handleLetterDragLeave(event)
+            }
+        })
+        lettersDropzone.addEventListener('drop', event => {
+            if(event.target.matches('.Letter')) {
+                handleLetterDrop(event)
+            }
         })
 
-        function handleTagsDropzoneDragenter(event) {
+        function handleTagsDropzoneDragEnter(event) {
             event.preventDefault()
         }
 
         function handleTagsDropzoneDragOver(event) {
-            if (event.dataTransfer.types.includes('letter-id')) {
+            if (event.dataTransfer.types.includes(X_LETTER_ID)) {
                 event.currentTarget.classList.add('Tags_dragovered')
                 event.dataTransfer.dropEffect = 'move'
             } else {
@@ -210,8 +234,8 @@
         function handleTagsDropzoneDrop(event) {
             event.preventDefault()
 
-            const tagId = event.dataTransfer.getData('text/plain')
-            const letterId = event.dataTransfer.getData('letter-id')
+            const tagId = event.dataTransfer.getData(X_TAG_ID)
+            const letterId = event.dataTransfer.getData(X_LETTER_ID)
             const letterTag = document.querySelector(`[data-letter-id="${letterId}"] [data-tag-id="${tagId}"]`)
             letterTag?.remove()
         }
@@ -219,35 +243,37 @@
         function handleLetterDragOver(event) {
             event.preventDefault()
 
-            if (event.currentTarget.querySelector(`[data-tag-id="${currentDraggableId}"]`) === null) {
-                event.currentTarget.classList.add('Letter_dragovered')
+            const draggedTag = document.querySelector(`.Tag_dragged`)
+            if (!draggedTag) return
+
+            const tagId = draggedTag.dataset.tagId
+            if (!event.target.querySelector(`[data-tag-id="${tagId}"]`)) {
+                event.target.classList.add('Letter_dragovered')
             }
         }
 
         function handleLetterDragLeave(event) {
-            event.currentTarget.classList.remove('Letter_dragovered')
+            event.target.classList.remove('Letter_dragovered')
         }
 
-        function handleTagDrop(event) {
-            const tagId = event.dataTransfer.getData('text/plain')
-            if (event.currentTarget.querySelector(`[data-tag-id="${tagId}"]`)) {
+        function handleLetterDrop(event) {
+            const tagId = event.dataTransfer.getData(X_TAG_ID)
+            if (event.target.querySelector(`[data-tag-id="${tagId}"]`)) {
                 return
             }
 
             event.preventDefault()
 
-            const letterId = event.dataTransfer.getData('letter-id')
+            const letterId = event.dataTransfer.getData(X_LETTER_ID)
             if (letterId) {
                 const letterTag = document.querySelector(`[data-letter-id="${letterId}"] [data-tag-id="${tagId}"]`)
-                event.currentTarget.appendChild(letterTag)
+                event.target.appendChild(letterTag)
             } else {
                 const tag = tagsDropzone.querySelector(`[data-tag-id="${tagId}"]`)
                 if (tag) {
                     const newTag = tag.cloneNode(true)
                     newTag.classList.remove('Tag_dragged')
-                    newTag.addEventListener('dragstart', handleTagDragStart)
-                    newTag.addEventListener('dragend', handleLetterDragEnd)
-                    event.currentTarget.appendChild(newTag)
+                    event.target.appendChild(newTag)
                 }
             }
         }
@@ -255,12 +281,10 @@
         function handleTagDragStart(event) {
             event.dataTransfer.clearData()
             const {tagId} = event.target.dataset
-            event.dataTransfer.setData('text/plain', tagId)
-            currentDraggableId = tagId
-
+            
+            event.dataTransfer.setData(X_TAG_ID, tagId)
             event.target.classList.add('Tag_dragged')
             lettersDropzone.classList.add('Letters_dropzone')
-
 
             if (event.target.closest('.Tags')) {
                 event.dataTransfer.effectAllowed = 'copy'
@@ -269,16 +293,16 @@
             const letterElement = event.target.closest('.Letter')
             if (letterElement) {
                 tagsDropzone.classList.add('Tags_dropzone')
-                event.dataTransfer.setData('letter-id', letterElement.dataset.letterId)
+                event.dataTransfer.setData(X_LETTER_ID, letterElement.dataset.letterId)
                 event.dataTransfer.effectAllowed = 'move'
             }
         }
 
-        function handleLetterDragEnd(event) {
+        function handleTagDragend(event) {
             event.target.classList.remove('Tag_dragged')
             tagsDropzone.classList.remove('Tags_dropzone', 'Tags_dragovered')
             lettersDropzone.classList.remove('Letters_dropzone')
-            Array.from(letterElements).forEach(letterElement => {
+            document.querySelectorAll('.Letter').forEach(letterElement => {
                 letterElement.classList.remove('Letter_dragovered')
             })
         }
