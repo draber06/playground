@@ -4,7 +4,7 @@
   "description": "PostCSS plugin 496-autoprefixer",
   "keywords": ["postcss", "css", "postcss-plugin", "postcss-496-autoprefixer"],
   "scripts": {
-    "unit": "node --test index.test.js",
+    "unit": "node --test --watch index.test.js",
     "test": "npm run unit && eslint ."
   },
   "author": "Alexei Eremin <draber06@gmail.com>",
