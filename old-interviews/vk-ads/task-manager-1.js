@@ -23,64 +23,152 @@
 // };
 // Приоритет задачи — целое число. Чем больше число, тем больший приоритет у задачи.
 // Вам нужно реализовать класс TaskManager со следующими методами:
+import assert from "assert";
+
 class TaskManager {
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
-    ) {}
+    ) {
+        this.robots = Array.from({ length: N }, () => ({
+            successCount: 0,
+            failedCount: 0,
+            tasks: [],
+            timeSpent: 0
+        }));
+        this.tasks = [];
+    }
 
     // Добавление задачи в очередь
     addToQueue(
         task // задача для исполнения, см. формат выше
-    ) {}
+    ) {
+        this.tasks.push(task);
+    }
 
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
-    run = () => {};
+    run = () => {
+        let currentTaskIndex = 0;
+        const sortedTasks = this.tasks.toSorted((a, b) => b.priority - a.priority);
+
+        function getNextTask() {
+            return sortedTasks[currentTaskIndex++];
+        }
+
+        async function taskScheduler(robot) {
+            let currentTask;
+            while ((currentTask = getNextTask())) {
+                const startDate = Date.now();
+                try {
+                    await currentTask.job();
+                    robot.successCount++;
+                } catch {
+                    robot.failedCount++;
+                } finally {
+                    robot.tasks.push(currentTask.id);
+                    robot.timeSpent += Date.now() - startDate;
+                }
+            }
+            return robot;
+        }
+
+
+        return Promise.all(this.robots.map(taskScheduler));
+    };
+
 }
 
+//     // число — общее количество выполненных успешно задач
+//     successCount: 2,
+//     // число — общее количество невыполненных задач
+//     failedCount: 1,
+//     // массив строк — идентификаторы взятых задач по очереди
+//     tasks: ["a1", "c3", "d4"],
+//     // число — количество проведённых в работе миллисекунд
+//     timeSpent: 203,
+// };
 (async () => {
     const generateJob = id =>
-        function () {
+        function() {
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // resolve();
-                    Math.random() > 0.8 ? resolve() : reject();
-                    // }, timeout);
-                }, Math.random() * 2000);
+                switch (id) {
+                    case "id0":
+                        setTimeout(() => {
+                            resolve();
+                        }, 1000);
+                        break;
+                    case "id1":
+                        setTimeout(() => {
+                            resolve();
+                        }, 2000);
+                        break;
+                    case "id2":
+                        setTimeout(() => {
+                            resolve();
+                        }, 3000);
+                        break;
+                    case "id3":
+                        setTimeout(() => {
+                            resolve();
+                        }, 1000);
+                        break;
+                    default:
+                        setTimeout(() => {
+                            // resolve();
+                            Math.random() > 0.8 ? resolve() : reject();
+                            // }, timeout);
+                        }, Math.random() * 2000);
+                }
             });
         };
 
     const tm = new TaskManager(3);
 
-    // 1000 - n2
     tm.addToQueue({
         id: "id0",
         priority: 10,
-        job: generateJob("id0"),
+        job: generateJob("id0")
     });
-    // 1000 - n3
     tm.addToQueue({
         id: "id1",
         priority: 1,
-        job: generateJob("id1"),
+        job: generateJob("id1")
     });
-    // 500 - n1
     tm.addToQueue({
         id: "id2",
         priority: 10,
-        job: generateJob("id2"),
+        job: generateJob("id2")
     });
-    // 500 - n3
     tm.addToQueue({
         id: "id3",
         priority: 4,
-        job: generateJob("id3"),
+        job: generateJob("id3")
     });
 
     const report = await tm.run();
 
-    console.log(report);
-})();
+    assert.deepEqual(report, [
+        {
+            successCount: 2,
+            failedCount: 0,
+            tasks: ["id0", "id1"],
+            timeSpent: 0
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id2"],
+            timeSpent: 0
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id3"],
+            timeSpent: 0
+        }
+    ]);
 
+    console.log("-----", "report", report);
+})();
 // module.exports = { TaskManager };
 // У робота-менеджера две фазы работы:
 // Получение задач в очередь. В этот момент синхронно или асинхронно в очередь добавляются задачи при помощи вызова метода addToQueue.

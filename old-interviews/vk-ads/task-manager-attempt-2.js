@@ -84,8 +84,7 @@ class TaskManager {
                             report.tasks.push(currentTask.id);
                             report.timeSpent += Date.now() - start;
                         })
-                        .then(() => runner([robot]))
-                        .then(() => report);
+                        .then(() => runner([robot]));
                 })
             );
         }

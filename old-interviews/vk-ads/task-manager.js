@@ -28,155 +28,80 @@ import assert from "assert";
  Вам нужно реализовать класс TaskManager со следующими методами:
 */
 class TaskManager {
-    tasks = [];
-    robots = [];
-    reportsByRobot = {};
-
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
-    ) {
-        this.robots = [...Array(N).keys()];
-
-        this.reportsByRobot = this.robots.reduce((acc, current) => {
-            acc[current] = {
-                // число — общее количество выполненных успешно задач
-                successCount: 0,
-                // число — общее количество невыполненных задач
-                failedCount: 0,
-                // массив строк — идентификаторы взятых задач по очереди
-                tasks: [],
-                // число — количество проведённых в работе миллисекунд
-                timeSpent: 0,
-            };
-            return acc;
-        }, {});
-    }
+    ) {}
 
     // Добавление задачи в очередь
     addToQueue(
         task // задача для исполнения, см. формат выше
-    ) {
-        this.tasks.push(task);
-    }
+    ) {}
 
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
-    run = () => {
-        const sortedTasks = this.tasks.sort((a, b) => b.priority - a.priority);
-
-        const runner = robots =>
-            Promise.all(
-                robots.map(r => {
-                    if (sortedTasks.length) {
-                        const currentTask = sortedTasks.shift();
-                        const report = this.reportsByRobot[r];
-                        const start = Date.now();
-
-                        return currentTask
-                            .job()
-                            .then(
-                                () => {
-                                    report.successCount += 1;
-                                },
-                                () => {
-                                    report.failedCount += 1;
-                                }
-                            )
-                            .finally(() => {
-                                report.tasks.push(currentTask.id);
-                                report.timeSpent += Date.now() - start;
-                            })
-                            .then(() => runner([r]))
-                            .then(() => report);
-                    }
-
-                    return this.reportsByRobot[r.id];
-                })
-            );
-
-        return runner(this.robots);
-    };
+    run = () => {};
 }
 
 (async () => {
-    // let i = true;
-    const generateJob = id =>
+    const generateJob = (id, timeout, shouldReject = false) =>
         function () {
-            // const timeout = i ? 500 : 1000;
-            // i = !i;
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     // resolve();
-                    Math.random() > 0.8 ? resolve() : reject();
-                    // }, timeout);
-                }, Math.random() * 2000);
+                    if (shouldReject) {
+                        reject();
+                    }
+                    resolve();
+                }, timeout);
             });
         };
 
     const tm = new TaskManager(3);
-    // n1 - id2 + id4 (500 + 1000)
-    // n2 - id0 + id1 (1000 + 1000)
-    // n3 - id3 + id5  (500 + 500)
 
-    // 1000 - n2
     tm.addToQueue({
         id: "id0",
         priority: 10,
-        job: generateJob("id0"),
+        job: generateJob("id0", 1000),
     });
-    // 1000 - n3
     tm.addToQueue({
         id: "id1",
         priority: 1,
-        job: generateJob("id1"),
+        job: generateJob("id1", 2000),
     });
-    // 500 - n1
     tm.addToQueue({
         id: "id2",
-        priority: 10,
-        job: generateJob("id2"),
+        priority: 9,
+        job: generateJob("id2", 3000),
     });
-    // 500 - n3
     tm.addToQueue({
         id: "id3",
         priority: 4,
-        job: generateJob("id3"),
-    });
-    // 1000 - n1;
-    tm.addToQueue({
-        id: "id4",
-        priority: 3,
-        job: generateJob("id4"),
-    });
-    // 500 - n2
-    tm.addToQueue({
-        id: "id5",
-        priority: 2,
-        job: generateJob("id5"),
+        job: generateJob("id3", 4000),
     });
 
     const report = await tm.run();
 
-    // assert.deepEqual(
-    //     report.map(({ timeSpent, ...r }) => r),
-    //     [
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id2", "id4"],
-    //         },
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id0", "id1"],
-    //         },
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id3", "id5"],
-    //         },
-    //     ]
-    // );
-    console.log(report);
+    assert.deepStrictEqual(report, [
+        {
+            successCount: 2,
+            failedCount: 0,
+            timeSpent: 3000,
+            tasks: ["id0", "id1"],
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            timeSpent: 3000,
+            tasks: ["id2"],
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            timeSpent: 4000,
+            tasks: ["id3"],
+        },
+    ]);
+
+    // console.log(report);
 })();
 
 // module.exports = { TaskManager };
