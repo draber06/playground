@@ -1,5 +1,3 @@
-import assert from "assert";
-
 /*
  Роботизированное агентство «Двое из ларца» занимается выполнением задач любой сложности за деньги клиентов.
  Работает агентство по принципу «одного окна». С     начала заказчик приносит список работ, которые нужно выполнить, с указанием приоритета каждой из них.
@@ -27,29 +25,30 @@ import assert from "assert";
  Приоритет задачи — целое число. Чем больше число, тем больший приоритет у задачи.
  Вам нужно реализовать класс TaskManager со следующими методами:
 */
+// const report = {
+//     // число — общее количество выполненных успешно задач
+//     successCount: 2,
+//     // число — общее количество невыполненных задач
+//     failedCount: 1,
+//     // массив строк — идентификаторы взятых задач по очереди
+//     tasks: ["a1", "c3", "d4"],
+//     // число — количество проведённых в работе миллисекунд
+//     timeSpent: 203,
+// };
+import assert from "assert";
+
 class TaskManager {
     tasks = [];
-    robots = [];
-    reportsByRobot = {};
 
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
     ) {
-        this.robots = [...Array(N).keys()];
-
-        this.reportsByRobot = this.robots.reduce((acc, current) => {
-            acc[current] = {
-                // число — общее количество выполненных успешно задач
-                successCount: 0,
-                // число — общее количество невыполненных задач
-                failedCount: 0,
-                // массив строк — идентификаторы взятых задач по очереди
-                tasks: [],
-                // число — количество проведённых в работе миллисекунд
-                timeSpent: 0,
-            };
-            return acc;
-        }, {});
+        this.robots = Array.from({ length: N }, () => ({
+            successCount: 0,
+            failedCount: 0,
+            tasks: [],
+            timeSpent: 0
+        }));
     }
 
     // Добавление задачи в очередь
@@ -59,124 +58,126 @@ class TaskManager {
         this.tasks.push(task);
     }
 
+    * taskGenerator(sortedTasks) {
+        for (const task of sortedTasks) {
+            yield task;
+        }
+    }
+
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
     run = () => {
-        const sortedTasks = this.tasks.sort((a, b) => b.priority - a.priority);
+        const sortedTasks = this.tasks.slice().sort((a, b) => a.priority - b.priority);
 
-        const runner = robots =>
-            Promise.all(
-                robots.map(r => {
-                    if (sortedTasks.length) {
-                        const currentTask = sortedTasks.shift();
-                        const report = this.reportsByRobot[r];
-                        const start = Date.now();
+        console.log("-----", "sortedTasks", sortedTasks);
+        const generator = this.taskGenerator(sortedTasks);
 
-                        return currentTask
-                            .job()
-                            .then(
-                                () => {
-                                    report.successCount += 1;
-                                },
-                                () => {
-                                    report.failedCount += 1;
-                                }
-                            )
-                            .finally(() => {
-                                report.tasks.push(currentTask.id);
-                                report.timeSpent += Date.now() - start;
-                            })
-                            .then(() => runner([r]))
-                            .then(() => report);
-                    }
+        async function taskScheduler(robot) {
+            for (let next = generator.next(); !next.done; next = generator.next()) {
+                const currentTask = next.value;
+                const startDate = Date.now();
 
-                    return this.reportsByRobot[r.id];
-                })
-            );
+                try {
+                    await currentTask.job();
+                    robot.successCount++;
+                } catch {
+                    robot.failedCount++;
+                } finally {
+                    robot.timeSpent += Date.now() - startDate;
+                    robot.tasks.push(currentTask.id);
+                }
+            }
 
-        return runner(this.robots);
+            return robot;
+        }
+
+        return Promise.all(this.robots.map(taskScheduler));
     };
+
+
 }
 
 (async () => {
-    // let i = true;
     const generateJob = id =>
-        function () {
-            // const timeout = i ? 500 : 1000;
-            // i = !i;
+        function() {
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // resolve();
-                    Math.random() > 0.8 ? resolve() : reject();
-                    // }, timeout);
-                }, Math.random() * 2000);
+                switch (id) {
+                    case "id0":
+                        setTimeout(() => {
+                            resolve();
+                        }, 2500);
+                        break;
+                    case "id1":
+                        setTimeout(() => {
+                            resolve();
+                        }, 2000);
+                        break;
+                    case "id2":
+                        setTimeout(() => {
+                            resolve();
+                        }, 3000);
+                        break;
+                    case "id3":
+                        setTimeout(() => {
+                            resolve();
+                        }, 1500);
+                        break;
+                    default:
+                        setTimeout(() => {
+                            // resolve();
+                            Math.random() > 0.8 ? resolve() : reject();
+                            // }, timeout);
+                        }, Math.random() * 2000);
+                }
             });
         };
 
     const tm = new TaskManager(3);
-    // n1 - id2 + id4 (500 + 1000)
-    // n2 - id0 + id1 (1000 + 1000)
-    // n3 - id3 + id5  (500 + 500)
 
-    // 1000 - n2
     tm.addToQueue({
         id: "id0",
         priority: 10,
-        job: generateJob("id0"),
+        job: generateJob("id0")
     });
-    // 1000 - n3
     tm.addToQueue({
         id: "id1",
         priority: 1,
-        job: generateJob("id1"),
+        job: generateJob("id1")
     });
-    // 500 - n1
     tm.addToQueue({
         id: "id2",
         priority: 10,
-        job: generateJob("id2"),
+        job: generateJob("id2")
     });
-    // 500 - n3
     tm.addToQueue({
         id: "id3",
         priority: 4,
-        job: generateJob("id3"),
-    });
-    // 1000 - n1;
-    tm.addToQueue({
-        id: "id4",
-        priority: 3,
-        job: generateJob("id4"),
-    });
-    // 500 - n2
-    tm.addToQueue({
-        id: "id5",
-        priority: 2,
-        job: generateJob("id5"),
+        job: generateJob("id3")
     });
 
     const report = await tm.run();
 
-    // assert.deepEqual(
-    //     report.map(({ timeSpent, ...r }) => r),
-    //     [
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id2", "id4"],
-    //         },
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id0", "id1"],
-    //         },
-    //         {
-    //             failedCount: 0,
-    //             successCount: 2,
-    //             tasks: ["id3", "id5"],
-    //         },
-    //     ]
-    // );
-    console.log(report);
+    assert.deepEqual(report, [
+        {
+            successCount: 2,
+            failedCount: 0,
+            tasks: ["id1"],
+            timeSpent: 0
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id3", "id2"],
+            timeSpent: 0
+        },
+        {
+            successCount: 1,
+            failedCount: 0,
+            tasks: ["id0"],
+            timeSpent: 0
+        }
+    ]);
+
+    console.log("-----", "report", report);
 })();
 
 // module.exports = { TaskManager };

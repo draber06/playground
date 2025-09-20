@@ -1,5 +1,3 @@
-import assert from "assert";
-
 const list = [
     () =>
         new Promise(resolve => {
@@ -15,6 +13,8 @@ const list = [
         }),
 ];
 
-function doStorageUpdate(storage, data) {}
+async function doStorageUpdate(storage, data) {
+    return list.reduce((prev, op) => prev.then(() => op(storage, data)), Promise.resolve());
+}
 
 doStorageUpdate({}, {});
