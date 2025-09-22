@@ -7,7 +7,7 @@ export default function App() {
     return (
         <div style={{ margin: "20px", padding: "20px", border: "2px solid green" }}>
             <button onClick={forceUpdate}>Render</button>
-            {/* <RenderCount/> */}
+            <RenderCount />
             <Parent />
         </div>
     );
@@ -22,7 +22,7 @@ const Parent = () => {
     return (
         <form style={{ margin: "20px", padding: "20px", border: "2px solid blue" }}>
             Input value is : {value}
-            {/* <RenderCount /> */}
+            <RenderCount />
             <Child onChange={handleChange} />
         </form>
     );
