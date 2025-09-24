@@ -52,10 +52,14 @@ function isEqual(obj1, obj2) {
     if (
         typeof obj1 !== "object" ||
         typeof obj2 !== "object" ||
-        typeof obj === null ||
+        typeof obj1 === null ||
         typeof obj2 === null
     )
         return false;
+
+    if (Array.isArray(obj1) !== Array.isArray(obj2)) {
+        return false;
+    }
 
     const keys1 = Object.keys(obj1);
     const keys2 = Object.keys(obj2);
