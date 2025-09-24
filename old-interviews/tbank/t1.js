@@ -5,7 +5,7 @@ const userService = {
         { name: "Nick", status: "deleted" },
     ],
     getFilteredUsers() {
-        return this.users.filter(function (user) {
+        return this.users.filter(user => {
             return user.status === this.currentFilter;
         });
     },

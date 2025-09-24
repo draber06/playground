@@ -33,7 +33,33 @@ const data = {
 };
 
 // TODO: Реализуйте эту функцию
-function search(path, object) {}
+function search(path, object) {
+    const segments = path.split(".");
+
+    function resolvePath(index, value) {
+        if (index >= segments.length) {
+            return [value];
+        }
+
+        const currentSegment = segments[index];
+
+        if (currentSegment === "*") {
+            if (Array.isArray(value)) {
+                return value.flatMap(v => resolvePath(index + 1, v));
+            } else if (value && value === "object") {
+                return Object.values(value).flatMap(v => resolvePath(index + 1, v));
+            } else {
+                return [];
+            }
+        }
+
+        if (value == null) return [];
+
+        return resolvePath(index + 1, value[currentSegment]);
+    }
+
+    return resolvePath(0, object);
+}
 
 assert.deepEqual(search("albums.0.name", data), "AM");
 assert.deepEqual(search("artists.3.name", data), "Radiohead");
