@@ -16,8 +16,8 @@ rl.on("line", line => {
 
 rl.on("close", () => {
     const n = parseInt(inputData[0], 10);
-    const coords = [];
 
+    const coords = [];
     for (let i = 1; i <= n; i++) {
         const pos = inputData[i].split(" ").map(v => parseInt(v, 10));
         coords.push(pos);
