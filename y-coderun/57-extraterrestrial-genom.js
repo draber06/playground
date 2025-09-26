@@ -8,11 +8,11 @@ const rl = readline.createInterface({
 const inputData = [];
 
 rl.on("line", line => {
-    const l = line.trim();
-    inputData.push(l);
+    inputData.push(line.trim());
 });
 
-// Time - O(n^2)
+// Time - O(n+m)
+// Space - O(m)
 rl.on("close", () => {
     const [genome1, genome2] = inputData;
     const pairs2 = new Set(); //Space -  O(m)
@@ -23,7 +23,7 @@ rl.on("close", () => {
     }
 
     let degreeOfSimilarity = 0;
-    // O(n)
+    // Time - O(n)
     for (let i = 0; i < genome1.length - 1; i++) {
         if (pairs2.has(genome1[i] + genome1[i + 1])) {
             degreeOfSimilarity++;
