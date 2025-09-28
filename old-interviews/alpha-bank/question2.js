@@ -11,16 +11,16 @@ var a = {
     },
 };
 
-a.sayName(); // ?
+a.sayName(); // Bill
 
 var b = a.sayName;
 
-b(); // ?
+b(); // undefined
 
-a.sayName.bind({ firstName: "Boris" })(); // ?
+a.sayName.bind({ firstName: "Boris" })(); // Boris
 
-a.sayName(); // ?
-a.sayLastName(); // ?
+a.sayName(); // Bill
+a.sayLastName(); // undefined
 
-a.sayName.bind({ firstName: "Boris" }).bind({ firstName: "Tom" })(); // ?
-a.sayLastName.bind({ lastName: "Petrov" })(); // ?
+a.sayName.bind({ firstName: "Boris" }).bind({ firstName: "Tom" })(); // Boris
+a.sayLastName.bind({ lastName: "Petrov" })(); // undefined

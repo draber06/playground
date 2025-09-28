@@ -5,7 +5,25 @@ import assert from "node:assert/strict";
 
 // 2. На входе добавляется объект с текущим количеством купюр в банкомате
 
-function getMoney(amount, limits = {}) {}
+function getMoney(amount, limits = {}) {
+    const denominations = [5000, 1000, 500, 100, 50];
+    const change = Object.fromEntries(denominations.map(d => [d, 0]));
+
+    let remaining = amount;
+
+    for (const d of denominations) {
+        const available = limits[d] ?? Infinity;
+        const count = Math.min(Math.floor(remaining / d), available);
+        change[d] = count;
+        remaining -= count * d;
+    }
+
+    if (remaining > 0) {
+        throw new Error(`Нет сдачи`);
+    }
+
+    return change;
+}
 
 assert.deepEqual(getMoney(6200), { 5000: 1, 1000: 1, 500: 0, 100: 2, 50: 0 });
 
