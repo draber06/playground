@@ -30,20 +30,12 @@ class TaskManager {
     constructor(
         N // общее число роботов-исполнителей (от 1 до 1024)
     ) {
-        this.robots = Array.from(Array(N).keys());
-        this.reportsByRobot = this.robots.reduce((acc, current) => {
-            acc[current] = {
-                // число — общее количество выполненных успешно задач
-                successCount: 0,
-                // число — общее количество невыполненных задач
-                failedCount: 0,
-                // массив строк — идентификаторы взятых задач по очереди
-                tasks: [],
-                // число — количество проведённых в работе миллисекунд
-                timeSpent: 0,
-            };
-            return acc;
-        }, {});
+        this.robots = Array.from({ length: N }, () => ({
+            successCount: 0,
+            failedCount: 0,
+            timeSpent: 0,
+            tasks: [],
+        }));
     }
 
     // Добавление задачи в очередь
@@ -52,45 +44,27 @@ class TaskManager {
     ) {
         this.tasks.push(task);
     }
-
+ 
     // Promise, который запускает процесс выполнения задач и выдаёт список отчётов
     run() {
-        const sortedTasks = this.tasks.sort((a, b) => {
-            if (a.priority > b.priority) {
-                return 1;
+        const sortedTasks = this.tasks.slice().sort((a, b) => b.priority - a.priority);
+
+        async function doTask(robot) {
+            while (sortedTasks.length) {
+                const task = sortedTasks.pop();
+                const startTime = Date.now();
+                try {
+                    await task.job();
+                    robot.successCount++;
+                } catch (err) {
+                    robot.failedCount++;
+                } finally {
+                    robot.timeSpent += Date.now() - startTime;
+                }
             }
-            return -1;
-        });
-        const reports = this.reportsByRobot;
-
-        function runner(robots) {
-            return Promise.all(
-                robots.map(robot => {
-                    const currentTask = sortedTasks.pop();
-                    const report = reports[robot];
-                    const start = Date.now();
-
-                    return currentTask
-                        ?.job()
-                        .then(
-                            () => {
-                                report.successCount++;
-                            },
-                            () => {
-                                report.failedCount++;
-                            }
-                        )
-                        .finally(() => {
-                            report.tasks.push(currentTask.id);
-                            report.timeSpent += Date.now() - start;
-                        })
-                        .then(() => runner([robot]))
-                        .then(() => report);
-                })
-            );
         }
 
-        return runner(this.robots);
+        return Promise.all(this.robots.map(doTask));
     }
 }
 

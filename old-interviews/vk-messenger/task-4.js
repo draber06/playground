@@ -1,6 +1,14 @@
 import assert from "assert";
 
-function kangaroo(x0, v0, x1, v1) {}
+function kangaroo(x0, v0, x1, v1) {
+    if (v0 === v1) {
+        return x0 === x1 ? 0 : false;
+    }
+
+    const t = (x1 - x0) / (v0 - v1);
+
+    return t > 0 ? t : false;
+}
 
 assert.equal(kangaroo(2, 3, 0, 5), 1);
 assert.equal(kangaroo(2, 3, 2, 5), 0);
