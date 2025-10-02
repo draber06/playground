@@ -49,12 +49,7 @@ const greenCar = {
 function isEqual(obj1, obj2) {
     if (obj1 === obj2) return true;
 
-    if (
-        typeof obj1 !== "object" ||
-        typeof obj2 !== "object" ||
-        typeof obj1 === null ||
-        typeof obj2 === null
-    )
+    if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 === null || obj2 === null)
         return false;
 
     if (Array.isArray(obj1) !== Array.isArray(obj2)) {
