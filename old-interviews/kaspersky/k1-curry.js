@@ -2,12 +2,23 @@ import assert from "assert";
 
 // Реализовать
 function add(a) {
-    if (!a) return 0;
-
+    if (a === undefined) {
+        return 0;
+    }
     return b => {
-        if (!b) return a;
-
+        if (b === undefined) {
+            return a;
+        }
         return add(a + b);
+    };
+}
+
+function curry(fn) {
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn(...args);
+        }
+        return (...next) => curried(...args, ...next);
     };
 }
 

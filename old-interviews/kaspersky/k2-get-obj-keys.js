@@ -4,3 +4,7 @@ const obj = {
 };
 
 // Как получить все ключи?
+
+Object.keys(obj);
+Object.getOwnPropertyNames(obj);
+Reflect.ownKeys(obj);
