@@ -50,6 +50,14 @@ function getNodesDfs(tree, type) {
     return result;
 }
 
+function getNodesDfsRecursive(tree, type) {
+    if (tree.value) {
+        return tree.type === type ? [tree] : [];
+    }
+
+    return tree.children.flatMap(node => getNodesDfsRecursive(node, type));
+}
+
 function getNodesBfs(tree, type) {
     const queue = [tree];
     const result = [];
@@ -95,6 +103,12 @@ assert.deepEqual(getNodesDfs(tree, "added"), [
 ]);
 
 assert.deepEqual(getNodesBfs(tree, "added"), [
+    { type: "added", value: 42 },
+    { type: "added", value: 43 },
+    { type: "added", value: 44 },
+]);
+
+assert.deepEqual(getNodesDfsRecursive(tree, "added"), [
     { type: "added", value: 42 },
     { type: "added", value: 43 },
     { type: "added", value: 44 },
