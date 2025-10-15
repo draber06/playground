@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Написать приложение с полем ввода для поиска героев
@@ -18,22 +18,6 @@ function getPeople(name, page = 1, options = {}) {
       throw new Error(`HTTP Error: ${res.status}, ${res.statusText}`);
     }
   );
-}
-
-function useDebouncedValue(value, delay = 300) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
 }
 
 function usePagination(initialPage = 1) {
@@ -58,33 +42,59 @@ function usePagination(initialPage = 1) {
   return { page, nextPage, prevPage, resetPage };
 }
 
+function debounce(fn, delay) {
+  let timeout;
+
+  function debounced(...args) {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  }
+
+  debounced.cancel = () => {
+    clearTimeout(timeout);
+  };
+
+  return debounced;
+}
+
 function useGetPeopleQuery({ page, name }) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    setIsLoading(true);
-    setError(null);
+  const fetchHeroes = useMemo(
+    () =>
+      debounce(async (name, page, signal) => {
+        setIsLoading(true);
+        setError(null);
 
-    const abortController = new AbortController();
-
-    getPeople(name, page, { signal: abortController.signal })
-      .then(setData)
-      .catch(err => {
-        if (err.name !== "AbortError") {
-          setError(err);
-          setData(null);
+        try {
+          const result = await getPeople(name, page, { signal });
+          setData(result);
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            setError(err);
+            setData(null);
+          }
+        } finally {
+          setIsLoading(false);
         }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      }, 300),
+    []
+  );
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchHeroes(name, page, abortController.signal);
 
     return () => {
       abortController.abort();
+      fetchHeroes.cancel();
     };
-  }, [name, page]);
+  }, [fetchHeroes, name, page]);
 
   return {
     data,
@@ -122,10 +132,9 @@ function AsyncSection({ isLoading, error, children }) {
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = useDebouncedValue(searchTerm);
 
   const { page, prevPage, nextPage, resetPage } = usePagination(1);
-  const { data, isLoading, error } = useGetPeopleQuery({ page, name: debouncedSearchTerm });
+  const { data, isLoading, error } = useGetPeopleQuery({ page, name: searchTerm });
 
   const handleSearchChange = e => {
     setSearchTerm(e.target.value);
