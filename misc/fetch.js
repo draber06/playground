@@ -1,18 +1,19 @@
-function customFetch(retryCount = 0, ...fetchArgs) {
-    const promise = fetch(...fetchArgs);
-
-    const retry = remainingRetries => {
-        return promise
-            .then(res => (res.ok ? res : Promise.reject(res)))
+function customFetch(retryCount = 3, ...fetchArgs) {
+    const attempt = remainingRetries => {
+        return fetch(...fetchArgs)
+            .then(res => {
+                if (res.ok) return res;
+                throw res;
+            })
             .catch(err => {
-                if (!remainingRetries) {
-                    return Promise.reject(err);
+                if (remainingRetries > 0) {
+                    return attempt(remainingRetries - 1);
                 }
-                return retry(remainingRetries - 1);
+                throw err;
             });
     };
 
-    return retry(retryCount);
+    return attempt(retryCount);
 }
 
 // customFetch(2, "https://api.weather.yandex.ru/v2/informers?").catch(e => {
