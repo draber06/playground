@@ -51,11 +51,12 @@ function getNodesDfs(tree, type) {
 }
 
 function getNodesDfsRecursive(tree, type) {
-    if (tree.value) {
-        return tree.type === type ? [tree] : [];
-    }
+    if (!tree) return [];
 
-    return tree.children.flatMap(node => getNodesDfsRecursive(node, type));
+    return [
+        ...(tree.type === type ? [tree] : []),
+        ...(tree.children?.flatMap(child => getNodesDfsRecursive(child, type)) || []),
+    ];
 }
 
 function getNodesBfs(tree, type) {
