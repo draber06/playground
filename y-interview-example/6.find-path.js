@@ -16,7 +16,7 @@ const graph = {
 
 async function findPathDfs(from, to, fetchFlights) {
     const stack = [[from, [from]]];
-    const visited = new Set();
+    const visited = new Set([from]);
 
     while (stack.length) {
         const [point, path] = stack.pop();

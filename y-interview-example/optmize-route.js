@@ -7,35 +7,36 @@ const directionsMap = {
     U: [0, 1],
 };
 
-function optimizeRoute(route) {
-    const visited = new Set([]);
+function optimizeRoute(directions) {
     let x = 0;
     let y = 0;
-    visited.add(`${x}:${y}`);
 
+    const visited = new Set([`${x},${y}`]);
     const optimizedRoute = [];
 
-    for (let i = 0; i < route.length; i++) {
-        const direction = route[i];
+    for (let i = 0; i < directions.length; i++) {
+        const direction = directions[i];
         optimizedRoute.push(direction);
 
         const [dx, dy] = directionsMap[direction];
         x += dx;
         y += dy;
-        const to = `${x}:${y}`;
 
-        if (visited.has(to)) {
+        const newPoint = `${x},${y}`;
+
+        if (visited.has(newPoint)) {
             while (optimizedRoute.length) {
                 const prevDir = optimizedRoute.pop();
                 const [prevDx, prevDy] = directionsMap[prevDir];
                 x -= prevDx;
                 y -= prevDy;
-                const prevPos = `${x}:${y}`;
-                if (prevPos === to) break;
-                visited.delete(prevPos);
+
+                const prevPoint = `${x},${y}`;
+                if (prevPoint === newPoint) break;
+                visited.delete(prevPoint);
             }
         } else {
-            visited.add(to);
+            visited.add(newPoint);
         }
     }
 
