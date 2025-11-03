@@ -1,3 +1,5 @@
+import assert from "assert";
+
 function getRoute(tickets = []) {
     const destinations = new Set();
     const routes = new Map();
@@ -26,19 +28,15 @@ function getRoute(tickets = []) {
     return route;
 }
 
-console.log(
+assert.deepEqual(
     getRoute([
-        {
-            from: "London",
-            to: "Moscow",
-        },
-        {
-            from: "NY",
-            to: "London",
-        },
-        {
-            from: "Moscow",
-            to: "SPb",
-        },
-    ])
+        { from: "London", to: "Moscow" },
+        { from: "NY", to: "London" },
+        { from: "Moscow", to: "SPb" },
+    ]),
+    [
+        { from: "NY", to: "London" },
+        { from: "London", to: "Moscow" },
+        { from: "Moscow", to: "SPb" },
+    ]
 );
