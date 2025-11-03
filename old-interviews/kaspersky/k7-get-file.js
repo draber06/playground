@@ -13,17 +13,3 @@ function getFile(path) {
     });
     return result;
 }
-
-// import fs from "fs";
-
-function getFileModern(path) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(path, function (err, data) {
-            if (err) {
-                reject(new Error(err));
-                return;
-            }
-            resolve(data);
-        });
-    });
-}
