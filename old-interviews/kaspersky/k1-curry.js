@@ -1,15 +1,7 @@
 import assert from "assert";
 
 // Реализовать
-function add(a) {
-    if (!a) return 0;
-
-    return b => {
-        if (!b) return a;
-
-        return add(a + b);
-    };
-}
+function add(a) {}
 
 assert.equal(add(9)(10)(), 19);
 assert.equal(add(9)(), 9);
