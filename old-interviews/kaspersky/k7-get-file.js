@@ -1,15 +1,13 @@
 //  Провести code-review  + переписать на es6
-const fs = require("fs");
+import fs from "fs";
 
-function getFile(path) {
-    let result;
-
-    fs.readFile(path, function (err, data) {
-        if (err) {
-            throw new Error(err);
-        }
-
-        result = data;
+function getFileModern(path) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, function (err, data) {
+            if (err) {
+                reject(err);
+            }
+            resolve(data);
+        });
     });
-    return result;
 }

@@ -5,10 +5,10 @@ import "./App.css";
 
 // Что произойдет при клике по кнопке?
 function App() {
-    let count = 0;
+    const [count, setCount] = useState(0);
 
     const changeCount = () => {
-        count += 1;
+        setCount(prevCount => prevCount + 1);
     };
 
     return (

@@ -15,6 +15,21 @@ const list = [
         }),
 ];
 
-function doStorageUpdate(storage, data) {}
+// function doStorageUpdate(storage, data) {
+//     let current = Promise.resolve();
+//
+//     for (let i = 0; i < list.length; i++) {
+//         const operation = list[i];
+//         current = current.then(() => operation(storage, data));
+//     }
+//
+//     return current;
+// }
+
+async function doStorageUpdate(storage, data) {
+    for (const fn of list) {
+        await fn(storage, data);
+    }
+}
 
 doStorageUpdate({}, {});

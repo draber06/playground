@@ -2,13 +2,9 @@ import assert from "assert";
 
 // Реализовать
 function add(a) {
-    if (!a) return 0;
+    if (a === undefined) return 0;
 
-    return b => {
-        if (!b) return a;
-
-        return add(a + b);
-    };
+    return b => (b === undefined ? a : add(a + b));
 }
 
 assert.equal(add(9)(10)(), 19);
