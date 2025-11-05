@@ -25,17 +25,20 @@ function useGetPeopleQuery(name, page) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     setIsLoading(true);
     setError(null);
 
-    const abortController = new AbortController();
-
     getPeople(name, page, { signal: abortController.signal })
-      .then(setData)
+      .then(data => {
+        setData(data);
+        setError(null);
+      })
       .catch(err => {
         if (err.name === "AbortError") return;
-        setData(null);
         setError(err);
+        setData(null);
       })
       .finally(() => {
         setIsLoading(false);
